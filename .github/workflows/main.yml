@@ -1,0 +1,39 @@
+name: Code Build Execution Job
+on:
+  workflow_dispatch:  # This adds manual triggering capability
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'  # Default branch
+        path: cicd/deploy/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+            
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v44
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with: 
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+
+    - name: Create the Glue Job and Code Build using Cloud formation template
+      run: 
+        aws cloudformation deploy --template deploy/test.yml --stack-name test
+        
+    - name: Run CodeBuild
+      uses: aws-actions/aws-codebuild-run-build@v1
+      with:
+        project-name: Testrepository-main-build6
+        env-vars-for-codebuild: aws-access-key-id, aws-secret-access-key
+       
