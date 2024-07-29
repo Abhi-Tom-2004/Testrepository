@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template to execute in CodeBuild
+Parameters:
+  Environment:
+    Type: String
+    Description: 'Tag and Environment values'
+    AllowedValues:
+      - QA
+      - ''
+    Default: QA
+Resources:
+  MySourceCreds:
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      AuthType: PERSONAL_ACCESS_TOKEN
+      ServerType: GITHUB
+      Token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  
+  CodeBuild:
+    Type: AWS::CodeBuild::Project
+    DependsOn: MySourceCreds
+    Properties:
+      Artifacts:
+        Type: NO_ARTIFACTS
+      BadgeEnabled: false
+      Environment:
+        ComputeType: BUILD_GENERAL1_LARGE
+        Image: public.ecr.aws/glue/aws-glue-libs:glue_libs_3.0.0_image_01
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+      Name: "Testrepository-main-build"
+      ServiceRole: CodeBuildServiceRole
+      Source:
+        Location: https://github.com/Abhi-Tom-2004/Testrepository.git
+        BuildSpec: !Sub 
+          version: 0.2
+          env:
+            shell: bash
+            variables: 
+              JUNIT_XML: junit_coverage.xml
+          phases:
+            pre_build:
+              commands:
+                - echo "Install dependencies"
+                - python3 --version
+                - cd "Testrepository/code"
+            build:
+              commands:
+                - echo "Running script"
+                - python3 testing.py
+        Type: GITHUB
+      TimeoutInMinutes: 15
