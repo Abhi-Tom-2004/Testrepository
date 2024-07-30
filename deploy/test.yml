@@ -27,8 +27,8 @@ Resources:
       Artifacts:
         Type: S3
         Location: testgit-output1
-        Name: output.zip
-        Path: output
+        Name: /
+        Path: output1
       BadgeEnabled: false
       Environment:
         ComputeType: BUILD_GENERAL1_LARGE
@@ -61,15 +61,10 @@ Resources:
               commands:
                 - echo "Running script"
                 - python3 testing.py
-            post_build:
-              commands:
-                - echo "Creating ZIP file of output directory"
-                - mkdir -p output
-                - zip -r output/output.zip output/
           artifacts:
             files:
               - '**/*'
-            name: output-$(date +%Y-%m-%d)
+            name: output2-$(date+%Y-%m-%d)
             base-directory: 'output'
             discard-paths: yes
         Type: GITHUB
