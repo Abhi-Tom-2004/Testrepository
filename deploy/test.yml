@@ -60,7 +60,7 @@ Resources:
             build:
               commands:
                 - echo "Running script"
-                - python3 s3_conn.py
+                - python3 testing.py
           artifacts:
             files:
               - '**/*'
